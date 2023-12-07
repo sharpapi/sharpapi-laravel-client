@@ -1,0 +1,83 @@
+{
+  "name": "sharpapi/sharpapi-laravel-client",
+  "description": "SharpAPI - AI-Powered Swiss Army Knife API. Assisting coders with the most repetitive content analysis and content generation processing needs of any app or platform.",
+  "keywords": [
+    "SharpAPI",
+    "laravel",
+    "API",
+    "AI API",
+    "automation",
+    "API Integration",
+    "Content Processing",
+    "App Enhancement",
+    "sharpapi-laravel-client"
+  ],
+  "homepage": "https://github.com/sharpapi/sharpapi-laravel-client",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dawid Makowski",
+      "email": "contact@sharpapi.com",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "^8.1",
+    "guzzlehttp/guzzle": "^7.8",
+    "kongulov/interact-with-enum": "^1.0",
+    "spatie/laravel-data": "^3.9"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.0",
+    "nunomaduro/collision": "^7.8",
+    "nunomaduro/larastan": "^2.0.1",
+    "pestphp/pest": "^2.20",
+    "pestphp/pest-plugin-arch": "^2.0",
+    "pestphp/pest-plugin-laravel": "^2.0",
+    "phpstan/extension-installer": "^1.1",
+    "phpstan/phpstan-deprecation-rules": "^1.0",
+    "phpstan/phpstan-phpunit": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "SharpAPI\\SharpApiService\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "SharpAPI\\SharpApiService\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": "",
+    "build": [
+    ],
+    "start": [
+      "Composer\\Config::disableProcessTimeout",
+      "@composer run build"
+    ],
+    "analyse": "vendor/bin/phpstan analyse",
+    "test": "vendor/bin/pest",
+    "test-coverage": "vendor/bin/pest --coverage",
+    "format": "vendor/bin/pint"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true,
+      "phpstan/extension-installer": true
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "SharpAPI\\SharpApiService\\SharpApiServiceProvider"
+      ],
+      "aliases": {
+        "SharpApiService": "SharpAPI\\SharpApiService\\Facades\\SharpApiService"
+      }
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
