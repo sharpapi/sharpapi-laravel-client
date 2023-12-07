@@ -1,4 +1,5 @@
-![SharpAPI GitHub cover](https://sharpapi.com/sharpapi-github-laravel-bg.png "SharpAPI Laravel Client")
+
+![SharpAPI GitHub cover](https://sharpapi.com/sharpapi-github-laravel-bg.jpg "SharpAPI Laravel Client")
 
 # SharpAPI - AI-Powered Swiss Army Knife API for every software developer
 
