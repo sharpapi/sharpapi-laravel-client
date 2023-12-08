@@ -1,7 +1,9 @@
 
 ![SharpAPI GitHub cover](https://sharpapi.com/sharpapi-github-laravel-bg.jpg "SharpAPI Laravel Client")
 
-# SharpAPI - AI-Powered Swiss Army Knife API for every software developer
+# SharpAPI Laravel Client
+
+## SharpAPI: AI-Powered Swiss Army Knife API for every software developer
 
 ### Unleash the full potential of your applications effortlessly by integrating powerful AI capabilities with just a few lines of code.
 
@@ -20,7 +22,7 @@ or [SEO](https://sharpapi.com/#seo).
 
 ## Requirements
 
-- PHP > 8.1
+- PHP >= 8.1
 - Laravel >= 9.0
 
 ## Features
