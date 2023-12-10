@@ -236,12 +236,11 @@ class SharpApiService
      *
      * @api
      */
-    public function productReviewSentiment(string $review, string $language = 'English'): string
+    public function productReviewSentiment(string $review): string
     {
         $url = $this->apiBaseUrl.'/ecommerce/review_sentiment';
         $response = $this->makeRequest('POST', $url, [
             'content' => $review,
-            'language' => $language,
         ]);
 
         return $this->parseStatusUrl($response);
@@ -429,12 +428,11 @@ class SharpApiService
      *
      * @api
      */
-    public function travelReviewSentiment(string $text, string $language = 'English'): string
+    public function travelReviewSentiment(string $text): string
     {
         $url = $this->apiBaseUrl.'/tth/review_sentiment';
         $response = $this->makeRequest('POST', $url, [
             'content' => $text,
-            'language' => $language,
         ]);
 
         return $this->parseStatusUrl($response);

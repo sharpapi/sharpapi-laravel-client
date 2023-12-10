@@ -10,9 +10,11 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/sharpapi/sharpapi-laravel-client.svg?style=flat-square)](https://packagist.org/packages/sharpapi/sharpapi-laravel-client)
 [![Total Downloads](https://img.shields.io/packagist/dt/sharpapi/sharpapi-laravel-client.svg?style=flat-square)](https://packagist.org/packages/sharpapi/sharpapi-laravel-client)
 
-Assisting coders with the most repetitive content analysis and content generation processing needs of any app or
+Assisting coders with the most repetitive content analysis 
+and content generation processing needs of any app or
 platform.
-SharpAPI is an easy-to-use REST API endpoints to help automate your app AI content processing whether it's:
+SharpAPI is an easy-to-use REST API endpoints to help automate your 
+app AI content processing whether it's:
 [E-commerce](https://sharpapi.com/#ecommerce),
 [HR Tech](https://sharpapi.com/#hr),
 [Travel](https://sharpapi.com/#tth),
@@ -24,6 +26,9 @@ or [SEO](https://sharpapi.com/#seo).
 
 - PHP >= 8.1
 - Laravel >= 9.0
+
+If you don't use Laravel then you can find
+[Generic SharpAPI PHP Client here &raquo;](https://github.com/sharpapi/sharpapi-php-client) 
 
 ## Features
 
@@ -46,7 +51,7 @@ Please refer to the official:
 
 ## Installation
 
-1. You can install the package via composer:
+1. You can install the package via `composer`:
 
 ```bash
 composer require sharpapi/sharpapi-laravel-client
@@ -65,10 +70,6 @@ SHARP_API_KEY=8bKzQl3cwckfVsnsN8T8p4BsACkziEQJ72U4pXpQ
 ## Usage
 
 You can inject `SharpApiService` class or use the facade `\SharpApiService` singleton.
-
-Underlying HTTP requests are powered via [Laravel HTTP Client/Guzzle](https://laravel.com/docs/10.x/http-client),
-so it's a good idea to check for
-typical [Guzzle Exceptions](https://docs.guzzlephp.org/en/stable/quickstart.html#exceptions).
 
 We recommend you to use Laravel queuing system to optimize dispatched jobs
 and the process of checking the results, especially if you process bigger batches of data.
@@ -143,37 +144,11 @@ class SharpTest extends Controller
 }
 ```
 
+#### Guzzle Exceptions
 The underlying HTTP requests are facilitated by
 [Laravel HTTP Client/Guzzle](https://laravel.com/docs/10.x/http-client),
 making it advisable to familiarize yourself with common
 [Guzzle Exceptions](https://docs.guzzlephp.org/en/stable/quickstart.html#exceptions).
-
-For optimal performance, we suggest leveraging Laravel's queuing system
-when dispatching jobs, particularly when handling larger datasets.
-This enhances the efficiency of both job dispatching and result retrieval processes.
-
-The typical use case involves the following steps:
-
-1. Dispatch one of the available AI processing methods, which will provide a job processing status URL.
-2. Execute the `pollJobStatusAndFetchResults($statusUrl)` method, operating in polling mode and making requests every 10
-   seconds for a duration of 180 seconds (modifiable,
-   see [optional custom configuration](#optional-custom-configuration)).
-3. Receive a `SharpApiJob` object.
-4. For a job marked as `success`, retrieve the results using one of the available methods, such
-   as `$jobResultJson = $jobResult->getResultJson()`.
-
-**Generally, each dispatched job concludes within a timeframe ranging from a few seconds to a minute.**
-
-Upon completion, a job with a `success` status will have its results ready for further processing. Different API
-methods/endpoints yield varying return formats; refer to
-the [List of API methods/endpoints](#list-of-api-methodsendpoints) for details.
-
-Our API ensures consistent formatting in every response. However, it's worth noting that AI engines utilized by SharpAPI
-may occasionally exhibit aberrant behavior, leading to timeouts or inaccurate data. In such instances, the job status
-will be marked as `failed`. Simply rerun the identical job request in these cases.
-
-While the job is actively processed by our engine, it will consistently report a `pending` status.
-
 ```php
 use GuzzleHttp\Exception\ClientException;
 
@@ -240,15 +215,16 @@ methods will return different data structure.
 Please refer to the detailed examples provided
 at [SharpAPI.com](https://sharpapi.com/)
 
+For methods that have `language` parameter you can also use
+`SharpApiLanguages` Enum values to make your code more readable.
+
 ### HR
 
 #### Parse Resume/CV File
 
 Parses a resume (CV) file from multiple formats (PDF/DOC/DOCX/TXT/RTF) and returns an extensive object of data points.
 
-The file has to be uploaded as `form-data` parameter called `file`.
-
-An optional language parameter can also be provided (`English` value is set as the default one) .
+An optional output language parameter can also be provided (`English` value is set as the default one) .
 
 ```php
 $statusUrl = \SharpApiService::parseResume('/test/resume.pdf', 'English');
@@ -308,7 +284,7 @@ Parses the customer's product review and provides its sentiment (POSITIVE/NEGATI
 with a score between 0-100%. Great for sentiment report processing for any online store.
 
 ```php
-$statusUrl = \SharpApiService::productReviewSentiment('review contents', 'English');
+$statusUrl = \SharpApiService::productReviewSentiment('review contents');
 ```
 
 #### Product Categories
@@ -414,7 +390,7 @@ Parses the Travel/Hospitality product review and provides its sentiment
 Great for sentiment report processing for any online store.
 
 ```php
-$statusUrl = \SharpApiService::travelReviewSentiment($text, 'English');
+$statusUrl = \SharpApiService::travelReviewSentiment($text);
 ```
 
 #### Tours & Activities Product Categories
@@ -455,7 +431,7 @@ $statusUrl = \SharpApiService::hospitalityProductCategories(
 
 ### Do you think our API is missing some obvious functionality?
 
-[Please let us know»](https://github.com/sharpapi/laravel-client/issues)
+[Please let us know»](https://github.com/sharpapi/sharpapi-laravel-client/issues)
 
 ## Changelog
 
