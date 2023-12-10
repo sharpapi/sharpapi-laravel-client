@@ -98,11 +98,6 @@ You can rerun the exact same job request in that case.
 As long as the job is still being processed by our engine it will keep
 returning `pending` status.
 
-## Usage
-
-To incorporate the `SharpApiService` functionality into your project, you have the option to either inject
-the `SharpApiService` class or utilize the singleton instance through `\SharpApiService` facade.
-
 ### Controller usage example
 
 ```php
