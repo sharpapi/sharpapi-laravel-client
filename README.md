@@ -52,7 +52,9 @@ Please refer to the official:
 composer require sharpapi/sharpapi-laravel-client
 ```
 
-2. Set the API key inside `.env`
+2. Register at [SharpApi.com](https://sharpapi.com/) and get the API key.
+
+3. Set the API key inside `.env`
 
 ```bash
 SHARP_API_KEY=8bKzQl3cwckfVsnsN8T8p4BsACkziEQJ72U4pXpQ
