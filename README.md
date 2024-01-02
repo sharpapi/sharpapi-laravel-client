@@ -33,7 +33,7 @@ If you don't use Laravel then you can find
     - Easily translate text for a global audience.
     - Spam Content Detection: Identify and filter out spam content effectively.
     - Contact Information Extraction: Extract phone numbers and email addresses from non-standard formats for streamlined communication.
-    - Generate concise summaries for improved content consumption.
+    - Generate concise summaries and unique keywords/tags for improved content consumption.
     - Boost SEO efforts by automatically generating META tags based on content.
 * **HR Tech**
     - Generate complex job descriptions effortlessly, saving time in the hiring process.
@@ -89,7 +89,7 @@ and the process of checking the results, especially if you process bigger batche
 Typical use case require these steps:
 
 1. Dispatch one of the available AI processing methods (this will return job processing status URL)
-2. Run `pollJobStatusAndFetchResults($statusUrl)` method which operates in polling mode, sending underneath
+2. Run `fetchResults($statusUrl)` method which operates in polling mode, sending underneath
    requests every 10 seconds for 180 seconds (these values [can be customized](#optional-custom-configuration)).
 3. `SharpApiJob` object will be returned.
 4. For a job finished with `success` return status you can obtain the results with one
@@ -137,7 +137,7 @@ class SharpTest extends Controller
             Call: 1800-394-7486 or our Singapore office +65 8888 8888'
         );
         
-        $result = $this->sharpApiService->pollJobStatusAndFetchResults($statusUrl);
+        $result = $this->sharpApiService->fetchResults($statusUrl);
         
         dd($result->getResultJson());
         /* returned:
@@ -173,7 +173,7 @@ try {
 }
 
 // Step 2: request to check job status in polling mode and wait for the result
-$jobResult = \SharpApiService::pollJobStatusAndFetchResults($statusUrl);
+$jobResult = \SharpApiService::fetchResults($statusUrl);
 
 // Step 3: get results of dispatched API job, f.e. this returns job result as a prettied JSON
 $jobResultJson = $jobResult->getResultJson();
@@ -373,6 +373,14 @@ or f.e. if you want to detect emails in places where they're not supposed to be.
 $statusUrl = \SharpApiService::detectEmails($text);
 ```
 
+#### Generate Keywords/Tags
+
+Generates a list of unique keywords/tags based on the provided content.
+
+```php
+$statusUrl = \SharpApiService::generateKeywords($text, 'English');
+```
+
 #### Summarize Text
 
 Generates a summarized version of the provided content. Perfect for generating
@@ -381,6 +389,7 @@ marketing introductions of longer texts.
 ```php
 $statusUrl = \SharpApiService::summarizeText($text, 'English');
 ```
+
 
 ### SEO
 

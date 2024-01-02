@@ -25,6 +25,7 @@ enum SharpApiJobTypeEnum: string
     case CONTENT_DETECT_EMAILS = 'content_detect_emails';
     case CONTENT_DETECT_SPAM = 'content_detect_spam';
     case CONTENT_SUMMARIZE = 'content_summarize';
+    case CONTENT_KEYWORDS = 'content_keywords';
     case CONTENT_TRANSLATE = 'content_translate';
     case SEO_GENERATE_TAGS = 'seo_generate_tags';
 
@@ -46,6 +47,7 @@ enum SharpApiJobTypeEnum: string
             self::CONTENT_DETECT_EMAILS => 'Detect Emails',
             self::CONTENT_DETECT_SPAM => 'Detect Spam',
             self::CONTENT_SUMMARIZE => 'Summarize Content',
+            self::CONTENT_KEYWORDS => 'Generate Keywords/Tags',
             self::CONTENT_TRANSLATE => 'Translate Text',
             self::SEO_GENERATE_TAGS => 'Generate SEO Tags',
         };
@@ -69,6 +71,7 @@ enum SharpApiJobTypeEnum: string
             self::CONTENT_DETECT_EMAILS,
             self::CONTENT_DETECT_SPAM,
             self::CONTENT_TRANSLATE,
+            self::CONTENT_KEYWORDS,
             self::CONTENT_SUMMARIZE => 'Content',
             self::SEO_GENERATE_TAGS => 'SEO',
         };
