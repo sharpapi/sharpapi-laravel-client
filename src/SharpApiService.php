@@ -7,12 +7,14 @@ namespace SharpAPI\SharpApiService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use SharpAPI\SharpApiService\Dto\JobDescriptionParameters;
 use SharpAPI\SharpApiService\Dto\SharpApiJob;
+use SharpAPI\SharpApiService\Dto\SharpApiSubscriptionInfo;
 use SharpAPI\SharpApiService\Enums\SharpApiJobStatusEnum;
+use SharpAPI\SharpApiService\Enums\SharpApiJobTypeEnum;
 
 class SharpApiService
 {
@@ -24,6 +26,8 @@ class SharpApiService
 
     protected int $apiJobStatusPollingWait = 180;
 
+    protected string $userAgent;
+
     /**
      * Initializes a new instance of the class.
      *
@@ -31,14 +35,75 @@ class SharpApiService
      */
     public function __construct()
     {
-        $this->apiBaseUrl = config('sharpapi-client.base_url', 'https://sharpapi.com/api/v1');
-        $this->apiKey = config('sharpapi-client.api_key');
-        $this->apiJobStatusPollingInterval = (int) config('sharpapi-client.api_job_status_polling_interval', 5);
-        $this->apiJobStatusPollingWait = (int) config('sharpapi-client.api_job_status_polling_wait', 180);
-
+        $this->setApiKey(config('sharpapi-client.api_key'));
         if (empty($this->apiKey)) {
             throw new InvalidArgumentException('API key is required.');
         }
+        $this->setApiBaseUrl(config('sharpapi-client.base_url', 'https://sharpapi.com/api/v1'));
+        $this->setApiJobStatusPollingInterval((int) config('sharpapi-client.api_job_status_polling_interval', 5));
+        $this->setApiJobStatusPollingWait((int) config('sharpapi-client.api_job_status_polling_wait', 180));
+        $this->setUserAgent(config('sharpapi-client.user_agent'));
+    }
+
+    /**
+     * Fetch the main API URL
+     */
+    public function getApiBaseUrl(): string
+    {
+        return $this->apiBaseUrl;
+    }
+
+    /**
+     * Might come in handy if case some API mocking is needed
+     */
+    public function setApiBaseUrl(string $apiBaseUrl): void
+    {
+        $this->apiBaseUrl = $apiBaseUrl;
+    }
+
+    public function getApiKey(): string
+    {
+        return $this->apiKey;
+    }
+
+    public function setApiKey(string $apiKey): void
+    {
+        $this->apiKey = $apiKey;
+    }
+
+    public function getUserAgent(): string
+    {
+        return $this->userAgent;
+    }
+
+    /**
+     * Handy method to set custom User-Agent header for Affiliate Program members.
+     *
+     * More at: https://sharpapi.com/affiliate_program
+     */
+    public function setUserAgent(string $userAgent): void
+    {
+        $this->userAgent = $userAgent;
+    }
+
+    public function getApiJobStatusPollingInterval(): int
+    {
+        return $this->apiJobStatusPollingInterval;
+    }
+
+    public function setApiJobStatusPollingInterval(int $apiJobStatusPollingInterval): void
+    {
+        $this->apiJobStatusPollingInterval = $apiJobStatusPollingInterval;
+    }
+
+    public function getApiJobStatusPollingWait(): int
+    {
+        return $this->apiJobStatusPollingWait;
+    }
+
+    public function setApiJobStatusPollingWait(int $apiJobStatusPollingWait): void
+    {
+        $this->apiJobStatusPollingWait = $apiJobStatusPollingWait;
     }
 
     /**
@@ -50,7 +115,7 @@ class SharpApiService
         string $method,
         string $url,
         array $data = [],
-        string $filePath = null
+        ?string $filePath = null
     ): ResponseInterface {
         $client = new Client();
         $options = [
@@ -69,7 +134,7 @@ class SharpApiService
             }
         }
 
-        return $client->request($method, $url, $options);
+        return $client->request($method, $this->getApiBaseUrl().$url, $options);
     }
 
     private function parseStatusUrl(ResponseInterface $response)
@@ -106,14 +171,14 @@ class SharpApiService
             }   // it's still `pending` status, let's wait a bit more
             $retryAfter = isset($response->getHeader('Retry-After')[0])
                 ? (int) $response->getHeader('Retry-After')[0]
-                : (int) config('sharpapi-client.api_job_status_polling_interval'); // fallback if no Retry-After header
+                : $this->getApiJobStatusPollingInterval(); // fallback if no Retry-After header
 
             if (config('sharpapi-client.api_job_status_use_polling_interval')) {
                 // let's force to use the value from config
-                $retryAfter = (int) config('sharpapi-client.api_job_status_polling_interval');
+                $retryAfter = $this->getApiJobStatusPollingInterval();
             }
             $waitingTime = $waitingTime + $retryAfter;
-            if ($waitingTime >= config('sharpapi-client.api_job_status_polling_wait')) {
+            if ($waitingTime >= $this->getApiJobStatusPollingWait()) {
                 break;
             } // otherwise wait a bit more and try again
             sleep($retryAfter);
@@ -136,10 +201,63 @@ class SharpApiService
     private function getHeaders(): array
     {
         return [
-            'Authorization' => 'Bearer '.$this->apiKey,
+            'Authorization' => 'Bearer '.$this->getApiKey(),
             'Accept' => 'application/json',
-            'User-Agent' => 'SharpAPILaravelAgent/1.0.0',
+            'User-Agent' => $this->getUserAgent(),
         ];
+    }
+
+    /**
+     * Simple PING endpoint to check the availability of the API and its internal time zone (timestamp).
+     * {
+     *  "ping": "pong",
+     *  "timestamp": "2024-03-12T08:50:11.188308Z"
+     * }
+     *
+     * @throws GuzzleException
+     *
+     * @api
+     */
+    public function ping(): ?array
+    {
+        $response = $this->makeRequest('GET', '/ping');
+
+        return json_decode($response->getBody()->__toString(), true);
+    }
+
+    /**
+     * Endpoint to check details regarding the subscription's current period
+     *
+     * "subscription_words_used_percentage" is a percentage of current monthly quota usage
+     * and might serve as an alert to the user of the depleted credits.
+     * With a value above 80%, it's advised to subscribe to more credits
+     * at https://sharpapi.com/dashboard/credits to avoid service disruption.
+     *
+     * These values are also available in the Dashboard at https://sharpapi.com/dashboard
+     *
+     * @throws GuzzleException
+     *
+     * @api
+     */
+    public function quota(): ?SharpApiSubscriptionInfo
+    {
+        $response = $this->makeRequest('GET', '/quota');
+        $info = json_decode($response->getBody()->__toString(), true);
+        if (! array_key_exists('timestamp', $info)) {
+            return null;
+        }
+
+        return new SharpApiSubscriptionInfo(
+            timestamp: new Carbon($info['timestamp']),
+            on_trial: $info['on_trial'],
+            trial_ends: new Carbon($info['trial_ends']),
+            subscribed: $info['subscribed'],
+            current_subscription_start: new Carbon($info['current_subscription_start']),
+            current_subscription_end: new Carbon($info['current_subscription_end']),
+            subscription_words_quota: $info['subscription_words_quota'],
+            subscription_words_used: $info['subscription_words_used'],
+            subscription_words_used_percentage: $info['subscription_words_used_percentage']
+        );
     }
 
     /**
@@ -148,21 +266,21 @@ class SharpApiService
      *
      * An optional language parameter can also be provided (`English` value is set as the default one) .
      *
-     * @param  string  $filePath The path to the resume file.
-     * @param  string  $language The language of the resume file. Defaults to 'English'.
+     * @param  string  $filePath  The path to the resume file.
+     * @param  string|null  $language  The language of the resume file. Defaults to 'English'.
      * @return string The parsed data or an error message.
      *
-     * @throws RequestException If there is an issue with the API request.
      * @throws GuzzleException
      *
      * @api
      */
-    public function parseResume(string $filePath, string $language = 'English'): string
-    {
-        $url = $this->apiBaseUrl.'/hr/parse_resume';
+    public function parseResume(
+        string $filePath,
+        ?string $language = null
+    ): string {
         $response = $this->makeRequest(
             'POST',
-            $url,
+            SharpApiJobTypeEnum::HR_PARSE_RESUME->url(),
             ['language' => $language],
             $filePath
         );
@@ -184,8 +302,10 @@ class SharpApiService
      */
     public function generateJobDescription(JobDescriptionParameters $jobDescriptionParameters): string
     {
-        $url = $this->apiBaseUrl.'/hr/job_description';
-        $response = $this->makeRequest('POST', $url, $jobDescriptionParameters->toArray());
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::HR_JOB_DESCRIPTION->url(),
+            $jobDescriptionParameters->toArray());
 
         return $this->parseStatusUrl($response);
     }
@@ -198,13 +318,19 @@ class SharpApiService
      *
      * @api
      */
-    public function relatedSkills(string $skillName, string $language = 'English'): string
-    {
-        $url = $this->apiBaseUrl.'/hr/related_skills';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $skillName,
-            'language' => $language,
-        ]);
+    public function relatedSkills(
+        string $skillName,
+        ?string $language = null,
+        ?int $maxQuantity = null
+    ): string {
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::HR_RELATED_SKILLS->url(),
+            [
+                'content' => $skillName,
+                'language' => $language,
+                'max_quantity' => $maxQuantity,
+            ]);
 
         return $this->parseStatusUrl($response);
     }
@@ -217,13 +343,19 @@ class SharpApiService
      *
      * @api
      */
-    public function relatedJobPositions(string $jobPositionName, string $language = 'English'): string
-    {
-        $url = $this->apiBaseUrl.'/hr/related_job_positions';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $jobPositionName,
-            'language' => $language,
-        ]);
+    public function relatedJobPositions(
+        string $jobPositionName,
+        ?string $language = null,
+        ?int $maxQuantity = null
+    ): string {
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::HR_RELATED_JOB_POSITIONS->url(),
+            [
+                'content' => $jobPositionName,
+                'language' => $language,
+                'max_quantity' => $maxQuantity,
+            ]);
 
         return $this->parseStatusUrl($response);
     }
@@ -238,10 +370,11 @@ class SharpApiService
      */
     public function productReviewSentiment(string $review): string
     {
-        $url = $this->apiBaseUrl.'/ecommerce/review_sentiment';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $review,
-        ]);
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::ECOMMERCE_REVIEW_SENTIMENT->url(),
+            ['content' => $review]
+        );
 
         return $this->parseStatusUrl($response);
     }
@@ -256,13 +389,23 @@ class SharpApiService
      *
      * @api
      */
-    public function productCategories(string $productName, string $language = 'English'): string
-    {
-        $url = $this->apiBaseUrl.'/ecommerce/product_categories';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $productName,
-            'language' => $language,
-        ]);
+    public function productCategories(
+        string $productName,
+        ?string $language = null,
+        ?int $maxQuantity = null,
+        ?string $voiceTone = null,
+        ?string $context = null
+    ): string {
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::ECOMMERCE_PRODUCT_CATEGORIES->url(),
+            [
+                'content' => $productName,
+                'language' => $language,
+                'max_quantity' => $maxQuantity,
+                'voice_tone' => $voiceTone,
+                'context' => $context,
+            ]);
 
         return $this->parseStatusUrl($response);
     }
@@ -276,13 +419,21 @@ class SharpApiService
      *
      * @api
      */
-    public function generateProductIntro(string $productData, string $language = 'English'): string
-    {
-        $url = $this->apiBaseUrl.'/ecommerce/product_intro';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $productData,
-            'language' => $language,
-        ]);
+    public function generateProductIntro(
+        string $productData,
+        ?string $language = null,
+        ?int $maxLength = null,
+        ?string $voiceTone = null
+    ): string {
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::ECOMMERCE_PRODUCT_INTRO->url(),
+            [
+                'content' => $productData,
+                'language' => $language,
+                'max_length' => $maxLength,
+                'voice_tone' => $voiceTone,
+            ]);
 
         return $this->parseStatusUrl($response);
     }
@@ -296,13 +447,23 @@ class SharpApiService
      *
      * @api
      */
-    public function generateThankYouEmail(string $productName, string $language = 'English'): string
-    {
-        $url = $this->apiBaseUrl.'/ecommerce/thank_you_email';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $productName,
-            'language' => $language,
-        ]);
+    public function generateThankYouEmail(
+        string $productName,
+        ?string $language = null,
+        ?int $maxLength = null,
+        ?string $voiceTone = null,
+        ?string $context = null
+    ): string {
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::ECOMMERCE_THANK_YOU_EMAIL->url(),
+            [
+                'content' => $productName,
+                'language' => $language,
+                'max_length' => $maxLength,
+                'voice_tone' => $voiceTone,
+                'context' => $context,
+            ]);
 
         return $this->parseStatusUrl($response);
     }
@@ -318,10 +479,11 @@ class SharpApiService
      */
     public function detectPhones(string $text): string
     {
-        $url = $this->apiBaseUrl.'/content/detect_phones';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $text,
-        ]);
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::CONTENT_DETECT_PHONES->url(),
+            ['content' => $text]
+        );
 
         return $this->parseStatusUrl($response);
     }
@@ -337,10 +499,11 @@ class SharpApiService
      */
     public function detectEmails(string $text): string
     {
-        $url = $this->apiBaseUrl.'/content/detect_emails';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $text,
-        ]);
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::CONTENT_DETECT_EMAILS->url(),
+            ['content' => $text]
+        );
 
         return $this->parseStatusUrl($response);
     }
@@ -355,10 +518,11 @@ class SharpApiService
      */
     public function detectSpam(string $text): string
     {
-        $url = $this->apiBaseUrl.'/content/detect_spam';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $text,
-        ]);
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::CONTENT_DETECT_SPAM->url(),
+            ['content' => $text]
+        );
 
         return $this->parseStatusUrl($response);
     }
@@ -371,13 +535,21 @@ class SharpApiService
      *
      * @api
      */
-    public function summarizeText(string $text, string $language = 'English'): string
-    {
-        $url = $this->apiBaseUrl.'/content/summarize';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $text,
-            'language' => $language,
-        ]);
+    public function summarizeText(
+        string $text,
+        ?string $language = null,
+        ?int $maxLength = null,
+        ?string $voiceTone = null
+    ): string {
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::CONTENT_SUMMARIZE->url(),
+            [
+                'content' => $text,
+                'language' => $language,
+                'max_length' => $maxLength,
+                'voice_tone' => $voiceTone,
+            ]);
 
         return $this->parseStatusUrl($response);
     }
@@ -389,13 +561,21 @@ class SharpApiService
      *
      * @api
      */
-    public function generateKeywords(string $text, string $language = 'English'): string
-    {
-        $url = $this->apiBaseUrl.'/content/keywords';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $text,
-            'language' => $language,
-        ]);
+    public function generateKeywords(
+        string $text,
+        ?string $language = null,
+        ?int $maxQuantity = null,
+        ?string $voiceTone = null
+    ): string {
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::CONTENT_KEYWORDS->url(),
+            [
+                'content' => $text,
+                'language' => $language,
+                'max_quantity' => $maxQuantity,
+                'voice_tone' => $voiceTone,
+            ]);
 
         return $this->parseStatusUrl($response);
     }
@@ -408,13 +588,77 @@ class SharpApiService
      *
      * @api
      */
-    public function translate(string $text, string $language): string
+    public function translate(
+        string $text,
+        string $language,
+        ?string $voiceTone = null,
+        ?string $context = null
+    ): string {
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::CONTENT_TRANSLATE->url(),
+            [
+                'content' => $text,
+                'language' => $language,
+                'voice_tone' => $voiceTone,
+                'context' => $context,
+            ]);
+
+        return $this->parseStatusUrl($response);
+    }
+
+    /**
+     * Generates a paraphrased version of the provided text.
+     * Only the `content` parameter is required. You can define the output language,
+     * maximum character length, and tone of voice. Additional instructions
+     * on how to process the text can be provided in the context parameter.
+     * Please keep in mind that `max_length` serves as a strong suggestion
+     * for the Language Model, rather than a strict requirement,
+     * to maintain the general sense of the outcome.
+     * You can set your preferred writing style by providing an optional `voice_tone` parameter.
+     * It can be adjectives like `funny` or `joyous`, or even the name of a famous writer.
+     * This API method also provides an optional context parameter,
+     * which can be used to supply additional flexible instructions for content processing.
+     *
+     * @throws GuzzleException
+     *
+     * @api
+     */
+    public function paraphrase(
+        string $text,
+        ?string $language = null,
+        ?int $maxLength = null,
+        ?string $voiceTone = null,
+        ?string $context = null
+    ): string {
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::CONTENT_PARAPHRASE->url(),
+            [
+                'content' => $text,
+                'language' => $language,
+                'max_length' => $maxLength,
+                'voice_tone' => $voiceTone,
+                'context' => $context,
+            ]);
+
+        return $this->parseStatusUrl($response);
+    }
+
+    /**
+     * Proofreads (and checks grammar) of the provided text.
+     *
+     * @throws GuzzleException
+     *
+     * @api
+     */
+    public function proofread(string $text): string
     {
-        $url = $this->apiBaseUrl.'/content/translate';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $text,
-            'language' => $language,
-        ]);
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::CONTENT_PROOFREAD->url(),
+            ['content' => $text]
+        );
 
         return $this->parseStatusUrl($response);
     }
@@ -427,13 +671,19 @@ class SharpApiService
      *
      * @api
      */
-    public function generateSeoTags(string $text, string $language = 'English'): string
-    {
-        $url = $this->apiBaseUrl.'/seo/generate_tags';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $text,
-            'language' => $language,
-        ]);
+    public function generateSeoTags(
+        string $text,
+        ?string $language = null,
+        ?string $voiceTone = null
+    ): string {
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::SEO_GENERATE_TAGS->url(),
+            [
+                'content' => $text,
+                'language' => $language,
+                'voice_tone' => $voiceTone,
+            ]);
 
         return $this->parseStatusUrl($response);
     }
@@ -448,10 +698,11 @@ class SharpApiService
      */
     public function travelReviewSentiment(string $text): string
     {
-        $url = $this->apiBaseUrl.'/tth/review_sentiment';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $text,
-        ]);
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::TTH_REVIEW_SENTIMENT->url(),
+            ['content' => $text]
+        );
 
         return $this->parseStatusUrl($response);
     }
@@ -468,17 +719,25 @@ class SharpApiService
      */
     public function toursAndActivitiesProductCategories(
         string $productName,
-        string $city = '',
-        string $country = '',
-        string $language = 'English'
+        ?string $city = null,
+        ?string $country = null,
+        ?string $language = null,
+        ?int $maxQuantity = null,
+        ?string $voiceTone = null,
+        ?string $context = null
     ): string {
-        $url = $this->apiBaseUrl.'/tth/ta_product_categories';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $productName,
-            'city' => $city,
-            'country' => $country,
-            'language' => $language,
-        ]);
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::TTH_TA_PRODUCT_CATEGORIES->url(),
+            [
+                'content' => $productName,
+                'city' => $city,
+                'country' => $country,
+                'language' => $language,
+                'max_quantity' => $maxQuantity,
+                'voice_tone' => $voiceTone,
+                'context' => $context,
+            ]);
 
         return $this->parseStatusUrl($response);
     }
@@ -495,17 +754,25 @@ class SharpApiService
      */
     public function hospitalityProductCategories(
         string $productName,
-        string $city = '',
-        string $country = '',
-        string $language = 'English'
+        ?string $city = null,
+        ?string $country = null,
+        ?string $language = null,
+        ?int $maxQuantity = null,
+        ?string $voiceTone = null,
+        ?string $context = null
     ): string {
-        $url = $this->apiBaseUrl.'/tth/hospitality_product_categories';
-        $response = $this->makeRequest('POST', $url, [
-            'content' => $productName,
-            'city' => $city,
-            'country' => $country,
-            'language' => $language,
-        ]);
+        $response = $this->makeRequest(
+            'POST',
+            SharpApiJobTypeEnum::TTH_HOSPITALITY_PRODUCT_CATEGORIES->url(),
+            [
+                'content' => $productName,
+                'city' => $city,
+                'country' => $country,
+                'language' => $language,
+                'max_quantity' => $maxQuantity,
+                'voice_tone' => $voiceTone,
+                'context' => $context,
+            ]);
 
         return $this->parseStatusUrl($response);
     }

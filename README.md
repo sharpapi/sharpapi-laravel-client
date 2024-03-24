@@ -1,18 +1,20 @@
 
 ![SharpAPI GitHub cover](https://sharpapi.com/sharpapi-github-laravel-bg.jpg "SharpAPI Laravel Client")
 
-# SharpAPI Laravel Client
+# SharpAPI Laravel Client - #AI Programming Interface
 
-### AI-Powered Swiss Army Knife API for every software developer
+### 🚀 AI-Powered Swiss Army Knife API
 
 ## Save countless hours and supercharge your app with AI capabilities in just 2 lines of code.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/sharpapi/sharpapi-laravel-client.svg?style=flat-square)](https://packagist.org/packages/sharpapi/sharpapi-laravel-client)
 [![Total Downloads](https://img.shields.io/packagist/dt/sharpapi/sharpapi-laravel-client.svg?style=flat-square)](https://packagist.org/packages/sharpapi/sharpapi-laravel-client)
 
-Save time on repetitive content analysis and generation tasks that your app users perform daily.
+#### Save time on repetitive content analysis and generation tasks that your app users perform daily.
 
 See more at [SharpAPI.com Website &raquo;](https://sharpapi.com/)
+
+---
 
 ## Requirements
 
@@ -22,26 +24,30 @@ See more at [SharpAPI.com Website &raquo;](https://sharpapi.com/)
 If you don't use Laravel then you can find
 [Generic SharpAPI PHP Client here &raquo;](https://github.com/sharpapi/sharpapi-php-client)
 
+---
 
-## What can it do for you?
-* **E-commerce**
+## ⛲ What can it do for you?
+* 🛒 **E-commerce**
     - Quickly generate engaging product introductions to attract customers.
     - Automatically create personalized thank-you emails for enhanced customer experience.
     - Streamline product categorization for a well-organized catalog.
     - Sentiment Analysis: Understand and analyze sentiment in product reviews for data-driven decision-making.
-* **Content & Marketing Automation**
+* 📝️ **Content & Marketing Automation**
     - Easily translate text for a global audience.
+    - Paraphrase and proofread any text (including grammar check)
     - Spam Content Detection: Identify and filter out spam content effectively.
     - Contact Information Extraction: Extract phone numbers and email addresses from non-standard formats for streamlined communication.
     - Generate concise summaries and unique keywords/tags for improved content consumption.
     - Boost SEO efforts by automatically generating META tags based on content.
-* **HR Tech**
-    - Generate complex job descriptions effortlessly, saving time in the hiring process.
-    - Skills and Position Insights: Identify related job positions and skills to streamline recruitment.
-    - Automated Resume Parsing: Efficiently parse and extract information from resumes files for easy processing.
-* **Travel, Tourism & Hospitality**
+* ‍💻 **HR Tech**
+  - Generate complex job descriptions effortlessly, saving time in the hiring process.
+  - Skills and Position Insights: Identify related job positions and skills to streamline recruitment.
+  - Automated Resume Parsing: Efficiently parse and extract information from resumes files for easy processing.
+* ✈️ **Travel, Tourism & Hospitality**
     - Analyze sentiment in travel reviews to improve services.
     - Streamline categorization for tours, activities, and hospitality products.
+
+---
 
 ## Features
 
@@ -61,12 +67,15 @@ Please refer to the official:
   Crafted by developers for developers, we provide continuous
   assistance throughout your journey.
 
+---
+
 ## Installation
 
 1. You can install the package via `composer`:
 
 ```bash
 composer require sharpapi/sharpapi-laravel-client
+php artisan vendor:publish --tag=sharpapi-laravel-client
 ```
 
 2. Register at [SharpApi.com](https://sharpapi.com/) and get the API key.
@@ -74,10 +83,12 @@ composer require sharpapi/sharpapi-laravel-client
 3. Set the API key inside `.env`
 
 ```bash
-SHARP_API_KEY=8bKzQl3cwckfVsnsN8T8p4BsACkziEQJ72U4pXpQ
+SHARP_API_KEY=key
 ```
 
 **That's it!**
+
+---
 
 ## Usage
 
@@ -166,10 +177,15 @@ use GuzzleHttp\Exception\ClientException;
 
 // Step 1: dispatch the job to the API with one of the methods, for example:
 try {
-    $statusUrl = \SharpApiService::summarizeText($text, 'German');
+    $statusUrl = \SharpApiService::summarizeText(
+        $text, 
+        'German',   // optional language
+        500,    // optional length
+        'neutral voice tone'    // optional voice tone
+      );
     // $statusUrl example value: 'http://sharpapi.com/api/v1/job/status/75acb6dc-a975-4969-9ef1-c62cebc511cb'
 } catch (ClientException $e) {
-    // $e->getResponse()
+     $e->getResponse()
 }
 
 // Step 2: request to check job status in polling mode and wait for the result
@@ -183,15 +199,11 @@ $jobResultArray = $jobResult->getResultArray();
 $jobResultObject = $jobResult->getResultObject();
 ```
 
+---
+
 ## OPTIONAL custom configuration
 
 This might come useful if you want to have more control over polling requests.
-
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="sharpapi-laravel-client"
-```
 
 This is the contents of the published config file:
 
@@ -206,6 +218,8 @@ return [
     // api_job_status_use_polling_interval is set to TRUE
     'api_job_status_polling_interval' => env('SHARP_API_JOB_STATUS_POLLING_INTERVAL', 10),
     'api_job_status_use_polling_interval' => env('SHARP_API_JOB_STATUS_USE_POLLING_INTERVAL', false),
+    // for affiliate program members use
+    'user_agent' => env('SHARP_API_USER_AGENT', 'SharpAPILaravelAgent/1.1.0'),
 ];
 ```
 
@@ -217,9 +231,12 @@ SHARP_API_JOB_STATUS_POLLING_WAIT=200
 SHARP_API_JOB_STATUS_USE_POLLING_INTERVAL=true
 SHARP_API_JOB_STATUS_POLLING_INTERVAL=5
 SHARP_API_BASE_URL=MOCK_SERVER
+SHARP_API_USER_AGENT="SharpAPILaravelAgent/1.1.0"
 ```
 
-## List of API methods/endpoints
+---
+
+## 📋 List of API methods/endpoints
 
 Each method always returns `SharpApiJob` object, where its
 `getResultJson / getResultArray / getResultObject`
@@ -230,9 +247,11 @@ at [SharpAPI.com](https://sharpapi.com/)
 For methods that have `language` parameter you can also use
 `SharpApiLanguages` Enum values to make your code more readable.
 
-### HR
+---
 
-#### Parse Resume/CV File
+### 🧑‍💻 HR
+
+#### ⭐ Parse Resume/CV File
 
 Parses a resume (CV) file from multiple formats (PDF/DOC/DOCX/TXT/RTF) and returns an extensive object of data points.
 
@@ -242,7 +261,7 @@ An optional output language parameter can also be provided (`English` value is s
 $statusUrl = \SharpApiService::parseResume('/test/resume.pdf', 'English');
 ```
 
-#### Generate Job Description
+#### ⭐ Generate Job Description
 
 Based on the list of extensive parameters this endpoint provides concise job details in the response format, including
 the short description, job requirements, and job responsibilities.
@@ -252,96 +271,218 @@ This functionality utilizes a specialized `DTO` class (`Data Transfer Object`) p
 named `JobDescriptionParameters` to aid in the validation of input parameters.
 Only the `name` parameter in the constructor of this `DTO` is mandatory.
 
+You can set your preferred writing style by providing a voice_tone parameter.
+It can be adjectives like `funny` or `joyous`, or even the name of a famous writer.
+
+This API method also provides an optional context parameter, which can be used 
+to supply additional flexible instructions for content processing.
+
 ```php
 $jobDescriptionParameters = new JobDescriptionParameters(
     name: "PHP Senior Engineer",
-    company_name: "ACME LTD",
-    minimum_work_experience: "5 years",
-    minimum_education: "Bachelor Degree",
-    employment_type: "full time",
-    required_skills: ['PHP8', 'Laravel'],
-    optional_skills: ['AWS', 'Redis'],
-    country: "United Kingdom",
-    remote: true,
-    visa_sponsored: true,
-    language: 'English'
+    company_name: "ACME LTD",   // optional
+    minimum_work_experience: "5 years",   // optional
+    minimum_education: "Bachelor Degree",   // optional
+    employment_type: "full time",   // optional
+    required_skills: ['PHP8', 'Laravel'],   // optional
+    optional_skills: ['AWS', 'Redis'],   // optional
+    country: "United Kingdom",   // optional
+    remote: true,   // optional
+    visa_sponsored: true,   // optional
+    voice_tone: 'Professional and Geeky',   // optional voice tone
+    context: null,   // optional context, additional AI processing instructions
+    language: null   // optional output language
 );
 
 $statusUrl = \SharpApiService::generateJobDescription($jobDescriptionParameters);
 ```
 
-#### Related Skills
+#### ⭐ Related Skills
 
 Generates a list of related skills with their weights as a float
 value (1.0-10.0) where 10 equals 100%, the highest relevance score.
 
+Only first parameter (`name`) is required.
+
+You can limit the output with the `max_quantity` parameter.
+
 ```php
-$statusUrl = \SharpApiService::relatedSkills('MySQL', 'English');
+$statusUrl = \SharpApiService::relatedSkills(
+    'MySQL', 
+    'English',   // optional language
+    10  // optional quantity
+  );
 ```
 
-#### Related Job Positions
+#### ⭐ Related Job Positions
 
 Generates a list of related job positions with their weights as
 float value (1.0-10.0) where 10 equals 100%, the highest relevance score.
 
+Only first parameter (`name`) is required.
+
+You can limit the output with the `max_quantity` parameter.
+
 ```php
-$statusUrl = \SharpApiService::relatedJobPositions('Senior PHP Engineer', 'English');
+$statusUrl = \SharpApiService::relatedJobPositions(
+    'Senior PHP Engineer', 
+    'English',   // optional language
+    10  // optional quantity
+  );
 ```
 
-### E-commerce
+---
 
-#### Product Review Sentiment
+
+### 🛒 E-commerce
+
+#### ⭐ Product Review Sentiment
 
 Parses the customer's product review and provides its sentiment (POSITIVE/NEGATIVE/NEUTRAL)
 with a score between 0-100%. Great for sentiment report processing for any online store.
 
 ```php
-$statusUrl = \SharpApiService::productReviewSentiment('review contents');
+$statusUrl = \SharpApiService::productReviewSentiment('customer review contents');
 ```
 
-#### Product Categories
+#### ⭐ Product Categories
 
 Generates a list of suitable categories for the product with relevance
 weights as a float value (1.0-10.0) where 10 equals 100%, the highest relevance score.
 Provide the product name and its parameters to get the best category matches possible.
 Comes in handy with populating product catalogue data and bulk products' processing.
 
+You can limit the output with the `max_quantity` parameter.
+
+You can set your preferred writing style by providing a `voice_tone` parameter.
+It can be adjectives like `funny` or `joyous`, or even the name of a famous writer.
+
+Within an additional optional parameter context, you can provide a list of other categories 
+that will be taken into consideration during the mapping process 
+(for example your current e-commerce categories).
+
+
 ```php
-$statusUrl = \SharpApiService::productCategories('Sony Playstation 5', 'English');
+$statusUrl = \SharpApiService::productCategories(
+    'Sony Playstation 5', 
+    'English',   // optional language
+    5,   // optional quantity
+    'Tech-savvy',   // optional voice tone
+    'Game Console, PS5 Console'    // optional context, current categories to match
+  );
 ```
 
-#### Generate Product Intro
+#### ⭐ Generate Product Intro
 
 Generates a shorter version of the product description. Provide as many details
 and parameters of the product to get the best marketing introduction possible.
 Comes in handy with populating product catalog data and bulk products processing.
 
+You can limit the output with the `max_length` parameter. Please keep in mind that `max_length` serves as a strong 
+suggestion for the Language Model, rather than a strict requirement, to maintain the general sense of the outcome.
+
+You can set your preferred writing style by providing a `voice_tone` parameter.
+It can be adjectives like `funny` or `joyous`, or even the name of a famous writer.
+
 ```php
-$statusUrl = \SharpApiService::generateProductIntro('Sony Playstation 5', 'English');
+$statusUrl = \SharpApiService::generateProductIntro(
+    'Sony Playstation 5', 
+    SharpApiLanguages::ENGLISH,   // optional language
+    300,   // optional length
+    'Funny'   // optional voice tone
+  );
 ```
 
-#### Generate Thank You E-mail
+#### ⭐ Generate Thank You E-mail
 
 Generates a personalized thank-you email to the customer after the purchase.
 The response content does not contain the title, greeting or sender info at the end,
 so you can personalize the rest of the email easily.
 
+You can limit the output with the max_length parameter. Please keep in mind that `max_length` serves 
+as a strong suggestion for the Language Model, rather than a strict requirement, 
+to maintain the general sense of the outcome.
+
+You can set your preferred writing style by providing a `voice_tone` parameter.
+It can be adjectives like funny or joyous, or even the name of a famous writer.
+
+This API method also provides an optional context parameter, which can be used to supply additional
+flexible instructions for content processing.
+
 ```php
-$statusUrl = \SharpApiService::generateThankYouEmail('Sony Playstation 5', 'English');
+$statusUrl = \SharpApiService::generateThankYouEmail(
+    'Sony Playstation 5', 
+    SharpApiLanguages::ENGLISH,    // optional language
+    250,    // optional length
+    'Neutral',    // optional voice tone
+    'Must invite customer to visit again before Holidays'   // optional context
+   );
 ```
 
-### Content
+---
 
-#### Translate Text
+
+### 📝️ Content
+
+#### ⭐ Translate Text
 
 Translates provided text to selected language. 80 languages are supported.
 Please check included `SharpApiLanguages` _Enum_ class for details.
 
+You can set your preferred writing style by providing a `voice_tone` parameter.
+It can be adjectives like funny or joyous, or even the name of a famous writer.
+
+An optional `context` parameter is also available. It can be used to provide more context to the translated text,
+like the use case example or some additional explanations.
+
 ```php
-$statusUrl = \SharpApiService::translate($text, SharpApiLanguages::ITALIAN);
+$statusUrl = \SharpApiService::translate(
+    'turn', 
+    SharpApiLanguages::FRENCH,    // optional language
+    'neutral',    // optional voice tone
+    'to turn a page'   // optional context
+    );
+
+// will result in :
+// {"content": "tourner", "to_language": "French", "from_language": "English"}
 ```
 
-#### Detect Spam
+#### ⭐ Paraphrase / Rephrase
+
+Generates a paraphrased version of the provided text.
+Only the `content` parameter is required. You can define the output language,
+maximum character length, and tone of voice. 
+
+Additional instructions on how to process the text can be provided in the context parameter.
+Please keep in mind that `max_length` serves as a strong suggestion
+for the Language Model, rather than a strict requirement,
+to maintain the general sense of the outcome.
+
+You can set your preferred writing style by providing an optional `voice_tone` parameter.
+It can be adjectives like `funny` or `joyous`, or even the name of a famous writer.
+
+This API method also provides an optional `context` parameter,
+which can be used to supply additional flexible instructions for content processing.
+
+```php
+$statusUrl = \SharpApiService::paraphrase(
+    $text, 
+    SharpApiLanguages::FRENCH,   // optional language
+    500, // optional length
+    'neutral',    // optional voice tone
+    'avoid using abbreviations'   // optional context
+    );
+```
+
+#### ⭐ Proofread Text + Grammar Check 
+
+Proofreads (and checks grammar) a provided text.
+
+```php
+$statusUrl = \SharpApiService::proofread($text);
+```
+
+#### ⭐ Detect Spam
 
 Checks if provided content passes a spam filtration test.
 Provides a percentage confidence score and an explanation
@@ -352,7 +493,7 @@ This information is useful for moderators to make a final decision.
 $statusUrl = \SharpApiService::detectSpam($text);
 ```
 
-#### Detect Phones Numbers
+#### ⭐ Detect Phones Numbers
 
 Parses the provided text for any phone numbers and returns the original detected
 version and its E.164 format. Might come in handy in the case of processing
@@ -363,7 +504,7 @@ to detect phone numbers in places where they're not supposed to be.
 $statusUrl = \SharpApiService::detectPhones($text);
 ```
 
-#### Detect Emails
+#### ⭐ Detect Emails
 
 Parses the provided text for any possible emails. Might come in handy in case
 of processing and validating big chunks of data against email addresses
@@ -373,38 +514,70 @@ or f.e. if you want to detect emails in places where they're not supposed to be.
 $statusUrl = \SharpApiService::detectEmails($text);
 ```
 
-#### Generate Keywords/Tags
+#### ⭐ Generate Keywords/Tags
 
 Generates a list of unique keywords/tags based on the provided content.
 
+You can limit the output with the `max_quantity` parameter.
+
+You can set your preferred writing style by providing a `voice_tone` parameter.
+
 ```php
-$statusUrl = \SharpApiService::generateKeywords($text, 'English');
+$statusUrl = \SharpApiService::generateKeywords(
+    $text, 
+    'English',    // optional language
+    5,  // optional length
+    'Freaky & Curious'    // optional voice tone
+  );
 ```
 
-#### Summarize Text
+#### ⭐ Summarize Text
 
 Generates a summarized version of the provided content. Perfect for generating
 marketing introductions of longer texts.
 
+You can limit the output with the `max_length` parameter. 
+Please keep in mind that `max_length` serves as a strong suggestion for the Language Model, 
+rather than a strict requirement, to maintain the general sense of the outcome.
+
+You can set your preferred writing style by providing a `voice_ton`e parameter.
+It can be adjectives like `funny` or `joyous`, or even the name of a famous writer.
+
 ```php
-$statusUrl = \SharpApiService::summarizeText($text, 'English');
+$statusUrl = \SharpApiService::summarizeText(
+    $text, 
+    'English',     // optional language
+    'David Attenborough'    // optional voice tone
+  );
 ```
 
+---
 
-### SEO
 
-#### Generate SEO Tags
+### 🗒 SEO
+
+#### ⭐ Generate SEO Tags
 
 Generates all most important META tags based on the content provided. Make sure to include
 link to the website and pictures URL to get as many tags populated as possible.
 
+You can set your preferred writing style by providing a `voice_ton`e parameter.
+It can be adjectives like `funny` or `joyous`, or even the name of a famous writer.
+
 ```php
-$statusUrl = \SharpApiService::generateSeoTags($text, 'English');
+$statusUrl = \SharpApiService::generateSeoTags(
+    $text, 
+    'English',      // optional language
+    'David Attenborough'    // optional voice tone
+  );
 ```
 
-### Travel, Tourism & Hospitality
+---
 
-#### Travel Review Sentiment
+
+### ✈️ Travel, Tourism & Hospitality
+
+#### ⭐ Travel Review Sentiment
 
 Parses the Travel/Hospitality product review and provides its sentiment
 (POSITIVE/NEGATIVE/NEUTRAL) with a score between 0-100%.
@@ -414,7 +587,7 @@ Great for sentiment report processing for any online store.
 $statusUrl = \SharpApiService::travelReviewSentiment($text);
 ```
 
-#### Tours & Activities Product Categories
+#### ⭐ Tours & Activities Product Categories
 
 Generates a list of suitable categories for the Tours & Activities product
 with relevance weights as float value (1.0-10.0) where 10 equals 100%,
@@ -423,16 +596,29 @@ to get the best category matches possible. Comes in handy with populating
 product catalogue data and bulk product processing.
 Only first parameter `productName` is required.
 
+You can limit the output with the `max_quantity` parameter.
+
+You can set your preferred writing style by providing a `voice_tone` parameter.
+It can be adjectives like `funny` or `joyous`, or even the name of a famous writer.
+
+Within an additional optional parameter `context`, you can provide a list of other categories
+that will be taken into consideration during the mapping process
+(for example your current e-commerce categories).
+
+
 ```php
 $statusUrl = \SharpApiService::toursAndActivitiesProductCategories(
         'Oasis of the Bay'
-        'Ha Long',
-        'Vietnam',
-        'English'
+        'Ha Long',     // optional city
+        'Vietnam',     // optional country
+        'English',     // optional language
+        10,     // optional quantity
+        'Adventurous',     // optional voice tone
+        'Bay Hotels, Ha Long Hotels'     // optional context, current categories to match
     );
 ```
 
-#### Hospitality Product Categories
+#### ⭐ Hospitality Product Categories
 
 Generates a list of suitable categories for the Hospitality type product
 with relevance weights as float value (1.0-10.0) where 10 equals 100%,
@@ -441,27 +627,98 @@ to get the best category matches possible. Comes in handy with populating
 products catalogs data and bulk products' processing.
 Only first parameter `productName` is required.
 
+You can limit the output with the `max_quantity` parameter.
+
+You can set your preferred writing style by providing a `voice_tone` parameter.
+It can be adjectives like `funny` or `joyous`, or even the name of a famous writer.
+
+Within an additional optional parameter `context`, you can provide a list of other categories
+that will be taken into consideration during the mapping process
+(for example your current e-commerce categories).
+
 ```php
 $statusUrl = \SharpApiService::hospitalityProductCategories(
         'Hotel Crystal 大人専用'
-        'Tokyo',
-        'Japan',
-        'English'
+        'Tokyo',     // optional city
+        'Japan',    // optional country
+        'English',     // optional language
+        10,    // optional quantity
+        'Adventurous',    // optional voice tone
+        'Tokyo Hotels, Crystal Hotels'     // optional context, current categories to match
     );
 ```
 
+---
+
+### 🤖 Technical API Endpoints
+
+#### ⭐ Subscription information / quota check
+Endpoint to check details regarding the subscription's current period
+
+```php
+$statusUrl = \SharpApiService::quota();
+```
+
+will result in:
+```json
+{
+    "timestamp": "2024-03-19T12:49:41.445736Z",
+    "on_trial": false,
+    "trial_ends": "2024-03-17T07:57:46.000000Z",
+    "subscribed": true,
+    "current_subscription_start": "2024-03-18T12:37:39.000000Z",
+    "current_subscription_end": "2024-04-18T12:37:39.000000Z",
+    "subscription_words_quota": 100000,
+    "subscription_words_used": 9608,
+    "subscription_words_used_percentage": 0.1
+}
+```
+
+`subscription_words_used_percentage` is a percentage of current monthly quota usage
+and might serve as an alert to the user of the depleted credits.
+With a value above 80%, it's advised to subscribe to more credits
+at https://sharpapi.com/dashboard/credits to avoid service disruption.
+
+These values are also available in the Dashboard at https://sharpapi.com/dashboard
+
+#### ⭐ Ping
+
+Simple PING endpoint to check the availability of the API and it's internal timze zone (timestamp).
+
+```php
+$statusUrl = \SharpApiService::ping();
+```
+
+will result in:
+```json
+{
+  "ping": "pong",
+  "timestamp": "2024-03-12T08:50:11.188308Z"
+}
+```
+
+---
+
+
 ### Do you think our API is missing some obvious functionality?
 
-[Please let us know»](https://github.com/sharpapi/sharpapi-laravel-client/issues)
+- [Please let us know via GitHub »](https://github.com/sharpapi/sharpapi-laravel-client/issues)
+- or [Join our Telegram Group »](https://t.me/sharpapi_community)
+
+---
 
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
+---
+
 ## Credits
 
 - [A2Z WEB LTD](https://github.com/a2zwebltd)
 - [Dawid Makowski](https://github.com/makowskid)
+
+---
 
 ## License
 
