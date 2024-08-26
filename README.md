@@ -203,35 +203,14 @@ $jobResultObject = $jobResult->getResultObject();
 
 ## OPTIONAL custom configuration
 
-This might come useful if you want to have more control over polling requests.
-
-This is the contents of the published config file:
-
-```php
-return [
-    'api_key' => env('SHARP_API_KEY'),
-    'base_url' => env('SHARP_API_BASE_URL', 'https://sharpapi.com/api/v1'), // as ENV is mock server needed
-    // how long (in seconds) the client should wait in polling mode for results
-    'api_job_status_polling_wait' => env('SHARP_API_JOB_STATUS_POLLING_WAIT', 180),
-    // how many seconds the client should wait between each result request
-    // usually Retry-After header is used (default 10s), this value won't have an effect unless
-    // api_job_status_use_polling_interval is set to TRUE
-    'api_job_status_polling_interval' => env('SHARP_API_JOB_STATUS_POLLING_INTERVAL', 10),
-    'api_job_status_use_polling_interval' => env('SHARP_API_JOB_STATUS_USE_POLLING_INTERVAL', false),
-    // for affiliate program members use
-    'user_agent' => env('SHARP_API_USER_AGENT', 'SharpAPILaravelAgent/1.1.0'),
-];
-```
-
 So you can overwrite these values with `.env` settings:
 
 ```php
-SHARP_API_KEY=8bKzQl3cwckfVsnsN8T8p4BsACkziEQJ72U4pXpQ
+SHARP_API_KEY=XXX_key_XXX
 SHARP_API_JOB_STATUS_POLLING_WAIT=200
 SHARP_API_JOB_STATUS_USE_POLLING_INTERVAL=true
 SHARP_API_JOB_STATUS_POLLING_INTERVAL=5
 SHARP_API_BASE_URL=MOCK_SERVER
-SHARP_API_USER_AGENT="SharpAPILaravelAgent/1.1.0"
 ```
 
 ---

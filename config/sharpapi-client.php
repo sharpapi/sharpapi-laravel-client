@@ -13,5 +13,4 @@ return [
     'api_job_status_polling_interval' => env('SHARP_API_JOB_STATUS_POLLING_INTERVAL', 10),
     'api_job_status_use_polling_interval' => env('SHARP_API_JOB_STATUS_USE_POLLING_INTERVAL', false),
     // for affiliate program members use
-    'user_agent' => env('SHARP_API_USER_AGENT', 'SharpAPILaravelAgent/1.1.0'),
 ];

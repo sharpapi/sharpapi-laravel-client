@@ -15,6 +15,7 @@ use SharpAPI\SharpApiService\Dto\SharpApiJob;
 use SharpAPI\SharpApiService\Dto\SharpApiSubscriptionInfo;
 use SharpAPI\SharpApiService\Enums\SharpApiJobStatusEnum;
 use SharpAPI\SharpApiService\Enums\SharpApiJobTypeEnum;
+use Spatie\Url\Url;
 
 class SharpApiService
 {
@@ -42,7 +43,7 @@ class SharpApiService
         $this->setApiBaseUrl(config('sharpapi-client.base_url', 'https://sharpapi.com/api/v1'));
         $this->setApiJobStatusPollingInterval((int) config('sharpapi-client.api_job_status_polling_interval', 5));
         $this->setApiJobStatusPollingWait((int) config('sharpapi-client.api_job_status_polling_wait', 180));
-        $this->setUserAgent(config('sharpapi-client.user_agent'));
+        $this->setUserAgent('SharpAPILaravelAgent/1.2.0');
     }
 
     /**
@@ -139,6 +140,7 @@ class SharpApiService
 
     private function parseStatusUrl(ResponseInterface $response)
     {
+        \Log::debug('DBG parseStatusUrl:', [json_decode($response->getBody()->__toString(), true)['status_url']]);
         return json_decode($response->getBody()->__toString(), true)['status_url'];
     }
 
@@ -183,13 +185,24 @@ class SharpApiService
             } // otherwise wait a bit more and try again
             sleep($retryAfter);
         } while (true);
+
         $data = json_decode($response->getBody()->__toString(), true)['data'];
+        \Log::debug('DBG data:', $data);
+
+        $url = Url::fromString($statusUrl);
+        if(count($url->getSegments()) == 5) { // shared job result URL
+            \Log::debug('DBG 5 segments:'.$url);
+            $result = json_decode($data['attributes']['result']);
+        } else {    // 7 segments, 1-to-1 job to result url
+            \Log::debug('DBG 7 segments:'.$url);
+            $result = (object)$data['attributes']['result'];
+        }
 
         return new SharpApiJob(
             id: $data['id'],
             type: $data['attributes']['type'],
             status: $data['attributes']['status'],
-            result: $data['attributes']['result'] ?? null
+            result: $result ?? null
         );
     }
 
@@ -539,7 +552,8 @@ class SharpApiService
         string $text,
         ?string $language = null,
         ?int $maxLength = null,
-        ?string $voiceTone = null
+        ?string $voiceTone = null,
+        ?string $context = null
     ): string {
         $response = $this->makeRequest(
             'POST',
@@ -549,6 +563,7 @@ class SharpApiService
                 'language' => $language,
                 'max_length' => $maxLength,
                 'voice_tone' => $voiceTone,
+                'context' => $context,
             ]);
 
         return $this->parseStatusUrl($response);
@@ -565,7 +580,8 @@ class SharpApiService
         string $text,
         ?string $language = null,
         ?int $maxQuantity = null,
-        ?string $voiceTone = null
+        ?string $voiceTone = null,
+        ?string $context = null
     ): string {
         $response = $this->makeRequest(
             'POST',
@@ -575,6 +591,7 @@ class SharpApiService
                 'language' => $language,
                 'max_quantity' => $maxQuantity,
                 'voice_tone' => $voiceTone,
+                'context' => $context,
             ]);
 
         return $this->parseStatusUrl($response);
