@@ -140,7 +140,6 @@ class SharpApiService
 
     private function parseStatusUrl(ResponseInterface $response)
     {
-        \Log::debug('DBG parseStatusUrl:', [json_decode($response->getBody()->__toString(), true)['status_url']]);
         return json_decode($response->getBody()->__toString(), true)['status_url'];
     }
 
@@ -187,14 +186,11 @@ class SharpApiService
         } while (true);
 
         $data = json_decode($response->getBody()->__toString(), true)['data'];
-        \Log::debug('DBG data:', $data);
 
         $url = Url::fromString($statusUrl);
         if(count($url->getSegments()) == 5) { // shared job result URL
-            \Log::debug('DBG 5 segments:'.$url);
-            $result = json_decode($data['attributes']['result']);
+            $result = (object) json_decode($data['attributes']['result']);
         } else {    // 7 segments, 1-to-1 job to result url
-            \Log::debug('DBG 7 segments:'.$url);
             $result = (object)$data['attributes']['result'];
         }
 

@@ -3,14 +3,12 @@
 
 # SharpAPI Laravel Client SDK
 
-### 🚀 Automate with AI in just two lines of code. Save countless hours and enhance your app effortlessly.
+### 🚀 Automate workflows with AI-powered API
 
 ## Leverage AI API to streamline workflows in E-Commerce, Marketing, Content Management, HR Tech, Travel, and more.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/sharpapi/sharpapi-laravel-client.svg?style=flat-square)](https://packagist.org/packages/sharpapi/sharpapi-laravel-client)
 [![Total Downloads](https://img.shields.io/packagist/dt/sharpapi/sharpapi-laravel-client.svg?style=flat-square)](https://packagist.org/packages/sharpapi/sharpapi-laravel-client)
-
-#### Save time on repetitive content analysis and generation tasks that your app users perform daily.
 
 See more at [SharpAPI.com Website &raquo;](https://sharpapi.com/)
 
@@ -75,10 +73,9 @@ Please refer to the official:
 
 ```bash
 composer require sharpapi/sharpapi-laravel-client
-php artisan vendor:publish --tag=sharpapi-laravel-client
 ```
 
-2. Register at [SharpApi.com](https://sharpapi.com/) and get the API key.
+2. Register at [SharpAPI.com](https://sharpapi.com/) and get the API key.
 
 3. Set the API key inside `.env`
 
@@ -506,7 +503,8 @@ $statusUrl = \SharpApiService::generateKeywords(
     $text, 
     'English',    // optional language
     5,  // optional length
-    'Freaky & Curious'    // optional voice tone
+    'Freaky & Curious',    // optional voice tone
+    'add emojis!' // optional extra context instructions for content processing
   );
 ```
 
@@ -526,7 +524,8 @@ It can be adjectives like `funny` or `joyous`, or even the name of a famous writ
 $statusUrl = \SharpApiService::summarizeText(
     $text, 
     'English',     // optional language
-    'David Attenborough'    // optional voice tone
+    'David Attenborough',    // optional voice tone
+    'add emojis!' // optional extra context instructions for content processing
   );
 ```
 

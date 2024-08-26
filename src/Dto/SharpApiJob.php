@@ -12,12 +12,11 @@ use stdClass;
 class SharpApiJob extends Data
 {
     public function __construct(
-        public string $id,
-        public string $type,
-        public string $status,
+        public string    $id,
+        public string    $type,
+        public string    $status,
         public ?stdClass $result
-    ) {
-    }
+    ) {}
 
     /**
      * Returns SharpAPI job ID (UUID format)
@@ -66,7 +65,7 @@ class SharpApiJob extends Data
      */
     public function getResultArray(): ?array
     {
-        return (array) $this->result;
+        return (array)$this->result;
     }
 
     /**
