@@ -2,7 +2,7 @@
 
 ## August 26, 2024 - v1.2.0 update
 - Generate Keywords/Tags & Summarize methods aquired optional `context` that allows to pass additional processing instructions for the provided `content`
-- API useage optimized internall, switched to AI job dispatch/result endpoint pairing mode
+- API usage optimized internally, switched to AI job dispatch/result endpoint pairing mode
 
 ## March 23, 2024 - v1.1.0 update
 
