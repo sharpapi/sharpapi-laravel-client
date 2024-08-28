@@ -24,6 +24,27 @@ If you don't use Laravel then you can find
 
 ---
 
+## Installation
+
+1. You can install the package via `composer`:
+
+```bash
+composer require sharpapi/sharpapi-laravel-client
+php artisan vendor:publish --tag=sharpapi-laravel-client
+```
+
+2. Register at [SharpAPI.com](https://sharpapi.com/) and get the API key.
+
+3. Set the API key inside `.env`
+
+```bash
+SHARP_API_KEY=key
+```
+
+**That's it!**
+
+---
+
 ## ⛲ What can it do for you?
 * 🛒 **E-commerce**
     - Quickly generate engaging product introductions to attract customers.
@@ -64,26 +85,6 @@ Please refer to the official:
 - **Tech Support**:
   Crafted by developers for developers, we provide continuous
   assistance throughout your journey.
-
----
-
-## Installation
-
-1. You can install the package via `composer`:
-
-```bash
-composer require sharpapi/sharpapi-laravel-client
-```
-
-2. Register at [SharpAPI.com](https://sharpapi.com/) and get the API key.
-
-3. Set the API key inside `.env`
-
-```bash
-SHARP_API_KEY=key
-```
-
-**That's it!**
 
 ---
 
