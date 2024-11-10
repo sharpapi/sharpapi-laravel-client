@@ -1,5 +1,8 @@
 # Changelog
 
+## November 10, 2024 - v1.2.1
+- removing the requirement to publish config file 
+
 ## August 26, 2024 - v1.2.0 update
 - Generate Keywords/Tags & Summarize methods aquired optional `context` that allows to pass additional processing instructions for the provided `content`
 - API usage optimized internally, switched to AI job dispatch/result endpoint pairing mode

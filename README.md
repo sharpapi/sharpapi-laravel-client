@@ -26,11 +26,12 @@ If you don't use Laravel then you can find
 
 ## Installation
 
-1. You can install the package via `composer`:
+Follow these steps to install and set up the SharpAPI Laravel Client package.
+
+1. Install the package via `composer`:
 
 ```bash
 composer require sharpapi/sharpapi-laravel-client
-php artisan vendor:publish --tag=sharpapi-laravel-client
 ```
 
 2. Register at [SharpAPI.com](https://sharpapi.com/) and get the API key.
@@ -41,7 +42,13 @@ php artisan vendor:publish --tag=sharpapi-laravel-client
 SHARP_API_KEY=key
 ```
 
-**That's it!**
+4. **[OPTIONAL]** Publish the configuration file `sharpapi-client.php`.
+
+> **Note:** You no longer need to publish the configuration file to use this package. By default, the package will use sensible default values. You only need to publish the configuration if you wish to customize it.
+
+```bash
+php artisan vendor:publish --tag=sharpapi-laravel-client
+```
 
 ---
 

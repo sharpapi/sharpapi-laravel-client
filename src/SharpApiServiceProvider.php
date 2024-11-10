@@ -25,8 +25,10 @@ class SharpApiServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__.'/../config/sharpapi-client.php', 'sharpapi-laravel-client');
+        // Merge the package configuration with the app configuration.
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/sharpapi-client.php', 'sharpapi-client'
+        );
 
         // Register the main class to use with the facade
         $this->app->singleton('sharpapi-laravel-client', function () {
