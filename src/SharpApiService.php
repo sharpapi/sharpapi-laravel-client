@@ -4,31 +4,14 @@ declare(strict_types=1);
 
 namespace SharpAPI\SharpApiService;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Carbon;
 use InvalidArgumentException;
-use Psr\Http\Message\ResponseInterface;
+use SharpAPI\Core\Client\SharpApiClient;
 use SharpAPI\SharpApiService\Dto\JobDescriptionParameters;
-use SharpAPI\SharpApiService\Dto\SharpApiJob;
-use SharpAPI\SharpApiService\Dto\SharpApiSubscriptionInfo;
-use SharpAPI\SharpApiService\Enums\SharpApiJobStatusEnum;
 use SharpAPI\SharpApiService\Enums\SharpApiJobTypeEnum;
-use Spatie\Url\Url;
 
-class SharpApiService
+class SharpApiService extends SharpApiClient
 {
-    protected string $apiBaseUrl;
-
-    protected string $apiKey;
-
-    protected int $apiJobStatusPollingInterval = 5;
-
-    protected int $apiJobStatusPollingWait = 180;
-
-    protected string $userAgent;
-
     /**
      * Initializes a new instance of the class.
      *
@@ -36,237 +19,12 @@ class SharpApiService
      */
     public function __construct()
     {
-        $this->setApiKey(config('sharpapi-client.api_key'));
-        if (empty($this->apiKey)) {
-            throw new InvalidArgumentException('API key is required.');
-        }
+        parent::__construct(config('sharpapi-client.api_key'));
         $this->setApiBaseUrl(config('sharpapi-client.base_url', 'https://sharpapi.com/api/v1'));
         $this->setApiJobStatusPollingInterval((int) config('sharpapi-client.api_job_status_polling_interval', 5));
         $this->setApiJobStatusPollingWait((int) config('sharpapi-client.api_job_status_polling_wait', 180));
-        $this->setUserAgent('SharpAPILaravelAgent/1.2.0');
-    }
+        $this->setUserAgent('SharpAPILaravelAgent/1.2.2');
 
-    /**
-     * Fetch the main API URL
-     */
-    public function getApiBaseUrl(): string
-    {
-        return $this->apiBaseUrl;
-    }
-
-    /**
-     * Might come in handy if case some API mocking is needed
-     */
-    public function setApiBaseUrl(string $apiBaseUrl): void
-    {
-        $this->apiBaseUrl = $apiBaseUrl;
-    }
-
-    public function getApiKey(): string
-    {
-        return $this->apiKey;
-    }
-
-    public function setApiKey(string $apiKey): void
-    {
-        $this->apiKey = $apiKey;
-    }
-
-    public function getUserAgent(): string
-    {
-        return $this->userAgent;
-    }
-
-    /**
-     * Handy method to set custom User-Agent header for Affiliate Program members.
-     *
-     * More at: https://sharpapi.com/affiliate_program
-     */
-    public function setUserAgent(string $userAgent): void
-    {
-        $this->userAgent = $userAgent;
-    }
-
-    public function getApiJobStatusPollingInterval(): int
-    {
-        return $this->apiJobStatusPollingInterval;
-    }
-
-    public function setApiJobStatusPollingInterval(int $apiJobStatusPollingInterval): void
-    {
-        $this->apiJobStatusPollingInterval = $apiJobStatusPollingInterval;
-    }
-
-    public function getApiJobStatusPollingWait(): int
-    {
-        return $this->apiJobStatusPollingWait;
-    }
-
-    public function setApiJobStatusPollingWait(int $apiJobStatusPollingWait): void
-    {
-        $this->apiJobStatusPollingWait = $apiJobStatusPollingWait;
-    }
-
-    /**
-     * Generic request method to run Guzzle client
-     *
-     * @throws GuzzleException
-     */
-    private function makeRequest(
-        string $method,
-        string $url,
-        array $data = [],
-        ?string $filePath = null
-    ): ResponseInterface {
-        $client = new Client();
-        $options = [
-            'headers' => $this->getHeaders(),
-        ];
-        if ($method === 'POST') {
-            if (is_string($filePath) && strlen($filePath)) {
-                $options['multipart'][] =
-                    [
-                        'name' => 'file',
-                        'contents' => file_get_contents($filePath),
-                        'filename' => basename($filePath),
-                    ];
-            } else {
-                $options['json'] = $data;
-            }
-        }
-
-        return $client->request($method, $this->getApiBaseUrl().$url, $options);
-    }
-
-    private function parseStatusUrl(ResponseInterface $response)
-    {
-        return json_decode($response->getBody()->__toString(), true)['status_url'];
-    }
-
-    /**
-     * Generic method to check job status in polling mode and then fetch results of the dispatched job
-     *
-     * @throws ClientException|GuzzleException
-     *
-     * @api
-     */
-    public function fetchResults(string $statusUrl): SharpApiJob
-    {
-        $client = new Client();
-        $waitingTime = 0;
-
-        do {
-            $response = $client->request(
-                'GET',
-                $statusUrl,
-                ['headers' => $this->getHeaders()]
-            );
-            $jobStatus = json_decode($response->getBody()->__toString(), true)['data']['attributes'];
-
-            if (
-                $jobStatus['status'] === SharpApiJobStatusEnum::SUCCESS->value
-                ||
-                $jobStatus['status'] === SharpApiJobStatusEnum::FAILED->value
-            ) {
-                break;
-            }   // it's still `pending` status, let's wait a bit more
-            $retryAfter = isset($response->getHeader('Retry-After')[0])
-                ? (int) $response->getHeader('Retry-After')[0]
-                : $this->getApiJobStatusPollingInterval(); // fallback if no Retry-After header
-
-            if (config('sharpapi-client.api_job_status_use_polling_interval')) {
-                // let's force to use the value from config
-                $retryAfter = $this->getApiJobStatusPollingInterval();
-            }
-            $waitingTime = $waitingTime + $retryAfter;
-            if ($waitingTime >= $this->getApiJobStatusPollingWait()) {
-                break;
-            } // otherwise wait a bit more and try again
-            sleep($retryAfter);
-        } while (true);
-
-        $data = json_decode($response->getBody()->__toString(), true)['data'];
-
-        $url = Url::fromString($statusUrl);
-        if(count($url->getSegments()) == 5) { // shared job result URL
-            $result = (object) json_decode($data['attributes']['result']);
-        } else {    // 7 segments, 1-to-1 job to result url
-            $result = (object)$data['attributes']['result'];
-        }
-
-        return new SharpApiJob(
-            id: $data['id'],
-            type: $data['attributes']['type'],
-            status: $data['attributes']['status'],
-            result: $result ?? null
-        );
-    }
-
-    /**
-     * Prepare shared headers
-     *
-     * @return string[]
-     */
-    private function getHeaders(): array
-    {
-        return [
-            'Authorization' => 'Bearer '.$this->getApiKey(),
-            'Accept' => 'application/json',
-            'User-Agent' => $this->getUserAgent(),
-        ];
-    }
-
-    /**
-     * Simple PING endpoint to check the availability of the API and its internal time zone (timestamp).
-     * {
-     *  "ping": "pong",
-     *  "timestamp": "2024-03-12T08:50:11.188308Z"
-     * }
-     *
-     * @throws GuzzleException
-     *
-     * @api
-     */
-    public function ping(): ?array
-    {
-        $response = $this->makeRequest('GET', '/ping');
-
-        return json_decode($response->getBody()->__toString(), true);
-    }
-
-    /**
-     * Endpoint to check details regarding the subscription's current period
-     *
-     * "subscription_words_used_percentage" is a percentage of current monthly quota usage
-     * and might serve as an alert to the user of the depleted credits.
-     * With a value above 80%, it's advised to subscribe to more credits
-     * at https://sharpapi.com/dashboard/credits to avoid service disruption.
-     *
-     * These values are also available in the Dashboard at https://sharpapi.com/dashboard
-     *
-     * @throws GuzzleException
-     *
-     * @api
-     */
-    public function quota(): ?SharpApiSubscriptionInfo
-    {
-        $response = $this->makeRequest('GET', '/quota');
-        $info = json_decode($response->getBody()->__toString(), true);
-        if (! array_key_exists('timestamp', $info)) {
-            return null;
-        }
-
-        return new SharpApiSubscriptionInfo(
-            timestamp: new Carbon($info['timestamp']),
-            on_trial: $info['on_trial'],
-            trial_ends: new Carbon($info['trial_ends']),
-            subscribed: $info['subscribed'],
-            current_subscription_start: new Carbon($info['current_subscription_start']),
-            current_subscription_end: new Carbon($info['current_subscription_end']),
-            subscription_words_quota: $info['subscription_words_quota'],
-            subscription_words_used: $info['subscription_words_used'],
-            subscription_words_used_percentage: $info['subscription_words_used_percentage']
-        );
     }
 
     /**

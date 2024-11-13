@@ -32,7 +32,7 @@ class SharpApiServiceProvider extends ServiceProvider
 
         // Register the main class to use with the facade
         $this->app->singleton('sharpapi-laravel-client', function () {
-            return new SharpApiService();
+            return new SharpApiService;
         });
     }
 }

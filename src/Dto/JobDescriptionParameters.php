@@ -22,6 +22,5 @@ class JobDescriptionParameters extends Data
         public ?string $voice_tone = null,
         public ?string $context = null,
         public ?string $language = null
-    ) {
-    }
+    ) {}
 }

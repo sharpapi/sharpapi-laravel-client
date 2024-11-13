@@ -6,6 +6,9 @@ namespace SharpAPI\SharpApiService\Enums;
 
 use Kongulov\Traits\InteractWithEnum;
 
+/**
+ * @api
+ */
 enum SharpApiVoiceTone: string
 {
     use InteractWithEnum;

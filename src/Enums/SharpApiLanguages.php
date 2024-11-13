@@ -1,11 +1,16 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 declare(strict_types=1);
 
 namespace SharpAPI\SharpApiService\Enums;
 
 use Kongulov\Traits\InteractWithEnum;
 
+/**
+ * @api
+ */
 class SharpApiLanguages
 {
     use InteractWithEnum;

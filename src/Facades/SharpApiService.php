@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @see \SharpAPI\SharpApiService\SharpApiService
+ *
+ * @api
  */
 class SharpApiService extends Facade
 {
