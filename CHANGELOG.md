@@ -1,5 +1,8 @@
 # Changelog
 
+## Dec 10, 2024 - v1.2.2
+- removing spatie/laravel-data dependency
+
 ## November 10, 2024 - v1.2.1
 - removing the requirement to publish config file 
 

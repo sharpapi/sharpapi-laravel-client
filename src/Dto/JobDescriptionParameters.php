@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace SharpAPI\SharpApiService\Dto;
 
-use Spatie\LaravelData\Data;
-
-class JobDescriptionParameters extends Data
+class JobDescriptionParameters
 {
     public function __construct(
         public string $name,
@@ -23,4 +21,23 @@ class JobDescriptionParameters extends Data
         public ?string $context = null,
         public ?string $language = null
     ) {}
+
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'company_name' => $this->company_name,
+            'minimum_work_experience' => $this->minimum_work_experience,
+            'minimum_education' => $this->minimum_education,
+            'employment_type' => $this->employment_type,
+            'required_skills' => $this->required_skills,
+            'optional_skills' => $this->optional_skills,
+            'country' => $this->country,
+            'remote' => $this->remote,
+            'visa_sponsored' => $this->visa_sponsored,
+            'voice_tone' => $this->voice_tone,
+            'context' => $this->context,
+            'language' => $this->language,
+        ];
+    }
 }

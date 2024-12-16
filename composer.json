@@ -41,7 +41,6 @@
     "illuminate/contracts": "^9.0|^10.0|^11.0",
     "kongulov/interact-with-enum": "^1.0",
     "sharpapi/php-core": "^1.0",
-    "spatie/laravel-data": "^3.0|^4.0",
     "spatie/url": "^2.4"
   },
   "require-dev": {
