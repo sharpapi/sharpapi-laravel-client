@@ -1,5 +1,8 @@
 # Changelog
 
+## March 4, 2025 - v1.2.4
+- Laravel 12 compatibility
+
 ## Dec 10, 2024 - v1.2.3
 - removing spatie/laravel-data dependency
 
